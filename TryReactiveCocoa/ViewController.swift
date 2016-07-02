@@ -7,19 +7,34 @@
 //
 
 import UIKit
+import ReactiveCocoa
+import Result
 
 class ViewController: UIViewController {
 
+    @IBOutlet weak var label: UILabel!
+    @IBOutlet weak var textfield: UITextField!
+    
+    let (updateTextSignal, updateTextObserver) = SignalProducer<String, NoError>.buffer(0)
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        
+        updateTextSignal
+            .map { (text) -> String in
+                return text.uppercaseString
+        }
+            .startWithNext { [weak self] (text) in
+            self?.label.text = text
+        }
+        
+        textfield.addTarget(self, action: #selector(updateText(_:)), forControlEvents: .EditingChanged)
+        
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    
+    func updateText(sender: UITextField) {
+        print(sender.text)
+        updateTextObserver.sendNext(sender.text!)
     }
-
-
 }
 
